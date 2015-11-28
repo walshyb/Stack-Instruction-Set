@@ -1,0 +1,6 @@
+!k
+p x
+p y
+halt
+x: dw 5
+y: dw 4

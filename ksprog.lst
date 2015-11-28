@@ -1,0 +1,9 @@
+Machine-level Assembler Version 6.3    Sat Nov 28 23:09:52 2015
+
+  LOC    OBJ   SOURCE
+hex*dec
+
+
+ERROR on line 1 (decimal) of ksl/ksprog.mas:
+         !ks                                     ksprog.mas
+Cannot open configuration file ksl/ks.cfg

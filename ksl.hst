@@ -1,0 +1,40 @@
+Horizontal Microcode Assembler Version 6.3      Mon Nov 23 20:01:45 2015
+
+  LOC    OBJECT    SOURCE
+hex*dec
+
+                   / Stack Instruction Set
+                   
+                   / The label indicates the opcode decoded up to that point.  
+                   / Each hex digit in a label represents 4 bits.  0 or 1 in a 
+                   / label represents the bits 0 and 1.  For example, the 
+                   / label LF_01 corresponds to opcode bits 1111 01; the label 
+                   / LF_2 corresponds to opcode bits 1111 0010. 
+                   
+                   /***********************************************************
+                   /     Fetch instruction and increment pc register           
+                   /***********************************************************
+0  *0    304D2000  fetch:      mar = pc; pc = pc + 1;
+1  *1    00001000              rd;                   
+2  *2    49400000              ir = mdr;
+                   /***********************************************************
+                   /           Decode opcode                                   
+                   /***********************************************************
+                   
+                   
+                   
+                   
+                   /***********************************************************
+                   /           Microcode for each instruction                  
+                   /***********************************************************
+                   
+                   L0000:      /------------------------- P (correct) ---------
+3  *3    39C36000              mar = ir; sp = sp - 1;
+4  *4    00001000              rd;
+5  *5    000E2000              mar = sp;
+6  *6    00000E00              wr; goto fetch;
+                   L0001:      /------------------------- PC (don't know)------
+
+ERROR on line 32 (decimal) of ksl/ksl.has:
+            mar = ir & xmask; sp = sp - 1;
+Missing assignment operator

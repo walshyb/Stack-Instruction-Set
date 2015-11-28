@@ -1,0 +1,126 @@
+/ Stack Instruction Set
+
+/ The label indicates the opcode decoded up to that point.  
+/ Each hex digit in a label represents 4 bits.  0 or 1 in a 
+/ label represents the bits 0 and 1.  For example, the 
+/ label LF_01 corresponds to opcode bits 1111 01; the label 
+/ LF_2 corresponds to opcode bits 1111 0010. 
+
+/***************************************************************/
+/     Fetch instruction and increment pc register               /
+/***************************************************************/
+fetch:      mar = pc; pc = pc + 1;
+            rd;                   
+            ir = mdr;
+/***************************************************************/
+/           Decode opcode                                       /
+/***************************************************************/
+
+
+
+
+/***************************************************************/
+/           Microcode for each instruction                      /
+/***************************************************************/
+
+L0000:      /------------------------- P (correct) ----------------------
+            mar = ir; sp = sp - 1;
+            rd;
+            mar = sp;
+            wr; goto fetch;
+L0001:      /------------------------- PC (don't know)-----------------------
+            mar = ir & xmask; sp = sp - 1;
+            rd;
+            mar = sp;
+            wr; goto fetch;
+            
+L2:         /------------------------- ADD (don't know)----------------------
+            mar = sp
+            rd;
+            sp = sp-1;
+            mar = mar+sp;
+            sp = sp+1;
+            wr; goto fetch;
+            
+L3:         /------------------------- SUB (don't know)----------------------
+            mar = sp;
+            rd;
+            sp = sp+1;
+            mar = mar-sp;
+            wr; goto fetch;
+            
+L4:         /------------------------- DUPE (correct) ----------------------
+            mar = sp; sp=sp-1;
+            rd;
+            mar = sp;
+            wr; goto fetch;
+            
+L5:         /------------------------- PR --(don't know)--------------------
+            f = ir+sp;
+            mar = f; mdr = sp;
+            wr; goto fetch;
+L6:         /------------------------- ADDR ----(dont know)-----------------
+            f = ir + bp;
+            mar = f;
+            rd;
+            ir= mdr+ir; goto fetch;
+L7:         /------------------------- SUBR ----(dont know)-----------------
+            f = ir+sp;
+            mar = f;
+            rd;
+            ir = mdr-ir; goto fetch;
+L8:         /------------------------- LDC ----(not sure)------------------
+             sp = ir&xmask; goto fetch;
+L9:         /------------------------- JA (don't know) -----------------------
+            pc = ir & xmask; 
+            goto fetch;
+LA:         /------------------------- LOAD (correct) ---------------------
+             
+             mar = sp;          ;mem[sp]
+             rd;                ;mem[sp]   
+             mar = mdr;         ;mem[mem[sp]]
+             rd;                ;mem[mem[sp]]
+             mar = sp;          ;mem[sp] = mem[mem[sp]]
+             wr; goto fetch;    ;mem[sp] = mem[mem[sp]]
+             
+LB:         /------------------------- aspc -----------------------
+             sp = sp+1;
+             
+LC:         /------------------------- call -----------------------
+            
+            mar = pc;           ;mem[--sp] = pc; pc = x;
+            rd;
+            sp = sp - 1;
+            mar = sp;
+            wr;
+            pc = mdr; goto fetch;
+                
+LD:         /------------------------- jcnt ----------------------
+
+LE:         /------------------------- jp ---------------------
+
+LF_0000:    /------------------------- jn ----------------------
+                         
+LF_0001:    /------------------------- jnz ----------------------
+
+LF_2:       /------------------------- jz ----------------------
+                              
+LF_3:       /------------------------- jodd ---------------------
+            pc = pc+1; if(z) &xmask;
+            
+LF_4:       /------------------------- jzon ----------------------
+                      
+LF_5:       /------------------------- ret (don't know) ---------------------
+            
+            mar = sp; sp = sp + 1;
+            rd;
+            pc = mdr; goto fetch;
+            
+LF_6:       /------------------------- stav ---------------------
+                   
+LF_7:       /------------------------- stva ---------------------
+
+LF_8:       /---------------------------div----------------------            
+
+
+            goto fetch;

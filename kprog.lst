@@ -1,0 +1,28 @@
+Machine-level Assembler Version 6.3    Sat Nov 28 23:24:19 2015
+
+  LOC    OBJ   SOURCE
+hex*dec
+
+               !k
+0  *0    0003  p x
+1  *1    0004  p y
+2  *2    FFFF  halt
+3  *3    0005  x: dw 5
+4  *4    0004  y: dw 4
+5  *5    ========= end of ksl/kprog.mas ==========================
+
+
+         Symbol/Cross-Reference Table
+
+Symbol                   Address     References
+                          (hex)       (hex)
+
+ x                         3           0  
+ y                         4           1  
+
+Input file   = ksl/kprog.mas
+Output file  = ksl/kprog.mac
+List file    = ksl/kprog.lst 
+Config file  = ksl/k.cfg 
+Number base  = decimal
+Label status = case sensitive
