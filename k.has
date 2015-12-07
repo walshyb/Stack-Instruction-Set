@@ -187,12 +187,19 @@ LF_2:       /------------------------- SUB (correct) ----------------------
             rd;
             mdr = mdr - temp;
             wr; goto fetch;
-LF_3:       /------------------------- STAV ---------------------
-                mar = sp;
-                sp = sp + 1;
-                mdr = sp;
-                sp = sp + 1;
-                wr;
+LF_3:       /------------------------- STAV ---------------------(Jabari Dash)
+                mar = sp;  sp = sp + 1;
+                rd;
+                temp = mdr;                     / temp = mem[sp++]; Temporarily store tha data value
+                
+                mar = sp; sp = sp + 1;
+                rd;
+                mar = mdr;                      / Get address to write out into the mar
+                
+                mdr = temp;                     / Put data back into mdr to write out
+                 
+                wr;                             / write data from mdr to address in mar
+                
                 goto fetch;
 LF_4:       /------------------------- STVA ----------------------
                 mdr = sp;
@@ -201,7 +208,7 @@ LF_4:       /------------------------- STVA ----------------------
                 sp = sp + 1;
                 wr;
                 goto fetch;
-LF_5:       /-------------------------  LOAD ---------------------
+LF_5:       /-------------------------  LOAD (correct) ---------------------
                 mar = sp;
                 rd;
                 mar = mdr;
@@ -269,16 +276,13 @@ LF_C:       /----------------------------- SCMP ----------------------
                   goto pushone;
             pushnegone:
                   mdr = 0 - 1;
-                  wr;
-                  goto fetch;
+                  wr; goto fetch;
             pushzero:
                   mdr = 0;
-                  wr;
-                  goto fetch;
+                  wr; goto fetch;
             pushone:
                   mdr = 1;
-                  wr;
-                  goto fetch;
+                  wr; goto fetch;
 LF_D:       /----------------------------- UCMP -----------------------
               temp1 = sp;
               sp = sp+1;
@@ -462,8 +466,7 @@ LF_F_5:     /------------------------------- DIV --------------------- (✓)
                   sp = sp - 1;
                   mdr = temp2;
                   mar = sp;
-                  wr;
-                  goto fetch;
+                  wr; goto fetch;
             negformat:
             temp3 = ~temp3;
             temp3 = temp3 + 1;
@@ -475,16 +478,19 @@ LF_F_5:     /------------------------------- DIV --------------------- (✓)
             mar = sp;
             wr; goto fetch;
 LF_F_6:     /------------------------------- REM --------------------(?)
-            
             mar = sp; sp = sp + 1;
             rd;
             temp = mdr;
             
-            mar = sp; sp = sp;
+            mar = sp;
             rd;
             temp1 = mdr; 
             
-            0 = temp; if (z) goto denZero;
+            temp3 = temp1 - temp;
+            0 = temp3; if (z) goto denZero;
+            0 = temp3; if (s) goto pushRem;
+            
+            0 = temp; if (z) goto zero;
             0 = temp; if(s) goto denNeg;
             0 = temp1; if(s)goto numNeg;
             goto remloop; 
@@ -495,7 +501,7 @@ LF_F_6:     /------------------------------- REM --------------------(?)
               goto remloop;
             
             denNeg:
-              0 = temp1; if (s) goto bothNeg;
+              0 = temp1; if (s) bothNeg;
               temp = ~temp;
               goto remloop; 
               
@@ -504,13 +510,13 @@ LF_F_6:     /------------------------------- REM --------------------(?)
               temp1 = ~temp;
               goto remloop; 
               
-            denZero:
+            zero:
               ct = 0
               mar = sp; sp = sp - 1;
               mdr = ct;
               wr;
               goto fetch;
-            
+              
             remloop:
               0 = temp1; if (s) goto pushRem;
               temp1 = temp1 - temp;
@@ -520,7 +526,7 @@ LF_F_6:     /------------------------------- REM --------------------(?)
               mar = sp; sp = sp - 1;
               mdr = temp1;
               wr;
-              goto fetch;  
+              goto fetch;   
               
 LF_F_7:     /------------------------------- ADDY ---------------------
                 temp = sp;
@@ -640,35 +646,35 @@ LF_F_E:     /---------------------------- ROT ------------------------
                 /mar = sp;
                 /wr; goto fetch;
 LF_F_F_0000:/----------------------------- PSP -----------------------
-                /mar = sp; sp = sp - 1;
-                /rd;
-                /mdr = mar; 
-                /wr; goto fetch;
-LF_F_F_0001:/------------------------------ BPBP ----------------------
-                /mar = bp;
-                /rd;
-                /bp = mdr; 
-                /goto fetch;
-LF_F_F_2:   /------------------------------- POBP ---------------------
-                /mar = sp; sp = sp + 1;
-                /rd;
-                /bp = mdr; 
-                /goto fetch; 
-LF_F_F_3:   /--------------------------------- PBP -------------------
-                /mar = sp; sp = sp - 1;
-                /mdr = bp;
-                /wr;
-                /goto fetch
-LF_F_F_4:   /-------------------------------- BCPY --------------------
-                /        temp1 = sp; sp = sp + 1;
-            /     temp2 = sp; sp = sp + 1;
-            / check:  0 = ct; if (z) goto fetch;
-            /     temp1 = temp1 + 1;
-        /         temp2 = temp2 + 1;
-          /       
-           /      mar = temp1;
-            /     rd;
-            /     mar = temp2;
-            /     wr;
-            /     ct = ct - 1;
-            /     goto check;
+                mar = sp; sp = sp - 1;
+                rd;
+                mdr = mar; 
+                wr; goto fetch;
+LF_F_F_0001:/------------------------------ BPBP (correct) ----------------------
+                mar = bp;
+                rd;
+                bp = mdr; 
+                goto fetch;
+LF_F_F_2:   /------------------------------- POBP (correct) -----------
+                mar = sp; sp = sp + 1;  
+                rd;
+                bp = mdr; 
+                goto fetch; 
+LF_F_F_3:   /--------------------------------- PBP (correct) ----------
+                sp = sp -1;
+                mar = sp; 
+                mdr = bp; 
+                wr; goto fetch
+LF_F_F_4:   /-------------------------------- BCPY (correct) --------------------
+                temp1 = sp; sp = sp + 1;
+          temp2 = sp; sp = sp + 1;
+      check:  0 = ct; if (z) goto fetch;
+          temp1 = temp1 + 1;
+          temp2 = temp2 + 1;
+          
+          mar = temp1;
+          rd;
+          mar = temp2;
+          wr;
+          ct = ct - 1;
+          goto check;
