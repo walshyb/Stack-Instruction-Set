@@ -1,5 +1,4 @@
 / Stack Instruction Set Horizontal Microcode  k.has
-
 /***************************************************************/
 /     Fetch instruction and increment pc register               /
 /***************************************************************/
@@ -32,12 +31,11 @@ L101:       dc = left(dc); if (s) goto LB;
             goto LA;
 L111:       dc = left(dc); if (s) goto LF; 
             goto LE;
-
 LF:         dc = left(dc); if (s) goto LF_1; 
 LF_0:       dc = left(dc); if (s) goto LF_01; 
 LF_00:      dc = left(dc); if (s) goto LF_001; 
 LF_000:     dc = left(dc); if (s) goto LF_0001;
-            goto LF_0000;
+            goto LF_0000;   
 LF_1:       dc = left(dc); if (s) goto LF_11; 
 LF_10:      dc = left(dc); if (s) goto LF_101; 
 LF_100:     dc = left(dc); if (s) goto LF_9;
@@ -56,7 +54,6 @@ LF_101:     dc = left(dc); if (s) goto LF_B;
             goto LF_A;
 LF_111:     dc = left(dc); if (s) goto LF_F;
             goto LF_E;
-
 LF_F:       dc = left(dc); if (s) goto LF_F_1;
 LF_F_0:     dc = left(dc); if (s) goto LF_F_01;
 LF_F_00:    dc = left(dc); if (s) goto LF_F_001;
@@ -80,7 +77,6 @@ LF_F_101:   dc = left(dc); if (s) goto LF_F_B;
             goto LF_F_A;
 LF_F_111:   dc = left(dc); if (s) goto LF_F_F;
             goto LF_F_E;
-
 LF_F_F:     dc = left(dc); if (s) goto fetch;
 LF_F_F_0:   dc = left(dc); if (s) goto LF_F_F_01;
 LF_F_F_00:  dc = left(dc); if (s) goto LF_F_F_001;
@@ -91,25 +87,18 @@ LF_F_F_001: dc = left(dc); if (s) goto LF_F_F_3
 LF_F_F_01:  dc = left(dc); if (s) goto fetch;
 LF_F_F_010: dc = left(dc); if (s) goto fetch;
             goto LF_F_F_4;
-
-
-L0000:  /-------------------------- P (correct)---------------------------- (✓)
-      
-      mar = ir;
-      rd;
-      sp = sp - 1;
-      mar = sp;
-      wr; goto fetch;
-
-L0001:  /-------------------------- PC (correct)---------------------------- (✓)
-
+L0000:  /-------------------------- P (correct)----------------------------
+          mar = ir;
+          rd;
+          sp = sp - 1;
+          mar = sp;
+          wr; goto fetch;
+L0001:  /-------------------------- PC (correct)----------------------------
             mdr = ir & xmask; 
             sp = sp - 1;
             mar = sp;
             wr;  goto fetch;
-
-L2:   /-------------------------- PR -------------------------- (✓)
-                                    
+L2:   /-------------------------- PR (correct)--------------------------
             temp = ir & xmask;
             temp = bp + temp;    
             mar = temp;
@@ -117,86 +106,69 @@ L2:   /-------------------------- PR -------------------------- (✓)
             sp = sp - 1; 
             mar = sp;
             wr; goto fetch;
-
-L3: /-------------------------- CORA -------------------------- (✓)
-      
+L3: /-------------------------- CORA (correct) --------------------------
             mdr = ir & xmask;
             mdr = bp + mdr;
             sp = sp - 1;
             mar = sp;
             wr; goto fetch;
-
-L4: /-------------------------- ASPC -------------------------- (✓)
-      
+L4: /-------------------------- ASPC (correct) -------------------------- 
             temp = ir & xmask;
             temp = sp + temp;
-            temp = temp & xmask;
             sp = temp; goto fetch;
-
-L5:   /-------------------------- CALL -------------------------- (✓)
-      
+L5:   /-------------------------- CALL -------------------------- 
             sp = sp - 1;
             mar = sp; mdr = pc;
-            pc = ir & xmask; wr; goto fetch;
-
-L6:   /-------------------------- JA -------------------------- (✓)
-
+            wr;
             pc = ir & xmask; goto fetch;
-
-L7:   /-------------------------- JCNT ---------------------------- Chris (?)
+L6:   /-------------------------- JA (correct)-------------------------- 
+            pc = ir & xmask; goto fetch;
+L7:   /-------------------------- JCNT ---------------------------- 
                   ct = ct - 1;
                   if(z) goto dojn1;
                   goto fetch;
-dojn1:             pc = ir & xmask; goto fetch;
-            
-
-
-
-L8:         /------------------------- JP  ----------------------
-                  mar  = sp; sp = sp + 1;
-                  rd; if (z) goto fetch; 
-                  goto n; 
+dojn1:            pc = ir & xmask; goto fetch;
+L8:     /------------------------- JP  ----------------------
+              mar  = sp; sp = sp + 1;
+              rd; if (z) goto fetch; 
+              goto n; 
 n:                rd; if (s) goto fetch;  
-                  goto dojp; 
-dojp:             pc = ir & xmask; goto fetch;
-
-L9:         /------------------------- JN ----------------------- Chris(?)
-                       
+              goto dojp; 
+dojp:           pc = ir & xmask; goto fetch;
+L9:         /------------------------- JN ----------------------- 
                   mar  = sp; sp = sp + 1;
                   rd; 
                   0 = temp; if(s) goto dojn;
                   goto fetch;
 dojn:             pc = ir & xmask; goto fetch;
- 
 LA:         /------------------------- JZ ---------------------
                 mar = sp; sp = sp + 1;
                 rd; 
                 0=temp; if (z) goto dojz;
                 goto fetch;
 dojz:           pc = ir & xmask; goto fetch; 
-
-LB:         /------------------------- JNZ ----------------------- Chris (?)
+LB:         /------------------------- JNZ ----------------------- 
                   mar = sp; sp = sp + 1;
                   rd; 
                   0=temp; if (z) goto fetch;
                   pc = ir & xmask; goto fetch;
-
 LC:         /------------------------- JODD -----------------------
-
+               mar = sp; sp = sp + 1;
+               goto fetch;
 LD:         /------------------------- JZON ----------------------
-
-LE:         /------------------------- JZOP --------------------- Chris (?)
+                mar = sp; sp = sp + 1;
+                rd; if (z) goto fetch;
+                pc = ir & xmask; goto fetch;
+LE:         /------------------------- JZOP --------------------- 
                   mar = sp; sp = sp + 1;
                   rd; if(s) goto fetch;
                   pc = ir & xmask; goto fetch;
 LF_0000:    /-------------------------  RET (not correct)---------------------- (✓)
-                  
-                  pc = sp; sp = sp + 1;
-                  
-     
-
+                  mar = sp;
+                  rd;
+                  sp = sp + 1;
+                  pc = mdr; goto fetch;
 LF_0001:    /------------------------- ADD (correct)---------------------- (✓)
-            
             mar = sp; 
             rd;
             temp = mdr;
@@ -206,10 +178,7 @@ LF_0001:    /------------------------- ADD (correct)---------------------- (✓)
             mdr = temp + mdr;
             mar = sp;
             wr; goto fetch; 
-
-
-LF_2:       /------------------------- SUB ---------------------- (✓)
-            
+LF_2:       /------------------------- SUB (correct) ----------------------
             mar = sp;
             sp = sp + 1;
             rd;
@@ -218,9 +187,6 @@ LF_2:       /------------------------- SUB ---------------------- (✓)
             rd;
             mdr = mdr - temp;
             wr; goto fetch;
-
-
-                     
 LF_3:       /------------------------- STAV ---------------------
                 mar = sp;
                 sp = sp + 1;
@@ -228,8 +194,6 @@ LF_3:       /------------------------- STAV ---------------------
                 sp = sp + 1;
                 wr;
                 goto fetch;
-                
-                            
 LF_4:       /------------------------- STVA ----------------------
                 mdr = sp;
                 sp = sp + 1;
@@ -237,8 +201,6 @@ LF_4:       /------------------------- STVA ----------------------
                 sp = sp + 1;
                 wr;
                 goto fetch;
-
-                      
 LF_5:       /-------------------------  LOAD ---------------------
                 mar = sp;
                 rd;
@@ -264,76 +226,151 @@ LF_7:       /------------------------- SUBC ---------------------
                 temp = temp - mdr;
                 mdr = temp;
                 wr; goto fetch
-                
-                
-LF_8:       /------------------------- DUPE ----------------------
+LF_8:       /------------------------- DUPE (correct)----------------------
+                mar = sp;
+                rd;
+                temp = mdr;
                 mar = sp; sp = sp - 1;
                 rd;
-                mar = sp;
+                mdr = temp; mar = sp;
                 wr; goto fetch;
-
 LF_9:       /-------------------------- ESBA  ---------------------- (✓)
-            
             mdr = bp; 
             sp = sp - 1;
             mar = sp;
             wr;
             bp = sp & xmask; 
             goto fetch;
-
 LF_A:       /-------------------------- REBA  --------------------- (✓)
-            
             sp = bp;
             mar = sp;
             rd;
             bp = mdr;
             sp = sp + 1; goto fetch;
-
-LF_B:       /--------------------------- ZESP    ---------------------
+LF_B:       /--------------------------- ZESP (correct) ---------------------
                 sp = 0; goto fetch;
-
-LF_C:       /----------------------------- SCMP -----------------------
-               temp1 = sp;
-               sp = sp+1;
-               rd;
-               temp2 = sp;
-               sp = sp+1;
-               rd; goto fetch;
-               
+LF_C:       /----------------------------- SCMP ----------------------
+               mar = sp;
+            sp = sp + 1;
+            rd;
+            temp = mdr;
+            mar = sp;
+            rd;
+            // temp1 = temp , temp2 = mdr
+            0 = mdr & temp; if (s) goto bothneg;
+            0 = mdr; if (s) goto pushnegone;
+            0 = temp; if (s) goto pushone;
+            mdr = mdr - temp; if (s) goto pushnegone;
+            0 = mdr; if (z) goto pushzero;
+            goto pushone;
+            bothneg:      
+                  mdr = mdr - temp; if (s) goto pushnegone;
+                  0 = mdr; if (z) goto pushzero;
+                  goto pushone;
+            pushnegone:
+                  mdr = 0 - 1;
+                  wr;
+                  goto fetch;
+            pushzero:
+                  mdr = 0;
+                  wr;
+                  goto fetch;
+            pushone:
+                  mdr = 1;
+                  wr;
+                  goto fetch;
 LF_D:       /----------------------------- UCMP -----------------------
-
-LF_E:       /------------------------------ REV ----------------------(?)
+              temp1 = sp;
+              sp = sp+1;
+              rd;
+              /temp
+              goto fetch;
+LF_E:       /------------------------------ REV ----------------------
               temp1 = sp; 
               sp = sp + 1; 
               rd;
-              
               temp2 = sp;
               sp = sp + 1;
               rd;
-              
               mar = sp;
               mdr = temp1;
               wr;
               sp = sp - 1;
-              
               mar = sp;
               mdr = temp2;
               wr;
               sp = sp - 1;
               goto fetch; 
-                
-                
-
 LF_F_0000:  /----------------------------- SHLL -----------------------
-
+            mar = sp;
+            rd;
+            temp = ir & zmask;
+            loopstart:
+                        0 = temp; if (z) goto pushfetch;
+                        mdr = left(mdr);
+                        temp = temp - 1;
+                        goto loopstart;
+            pushfetch:
+                        wr;
+                        goto fetch;
 LF_F_0001:  /------------------------------- SHRL ---------------------
-
+            mar = sp;
+            rd;
+            temp = ir & zmask;
+            shiftloopstart:
+                        0 = temp; if (z) goto pushfetcher;
+                        mdr = right(mdr);
+                        temp = temp - 1;
+                        goto shiftloopstart;
+            pushfetcher:
+                        wr;
+                        goto fetch;
 LF_F_2:     /-------------------------------- SHRA --------------------
-
+            mar = sp;
+            rd;
+            temp = ir & zmask;
+            temp2 = 0 - 1;
+            temp2 = right(temp2);
+            temp2  = ~temp2;
+            0 = mdr; if (s) goto negshraloop;
+            posshraloop:
+                        0 = temp; if (z) goto shrapushfetcher;
+                        mdr = right(mdr);
+                        temp = temp - 1;
+                        goto posshraloop;
+            negshraloop:
+                        0 = temp; if (z) goto shrapushfetcher;
+                        mdr = right(mdr);
+                        mdr = mdr + temp2;
+                        temp = temp - 1;
+                        goto negshraloop;
+            shrapushfetcher:
+                        wr;
+                        goto fetch;
 LF_F_3:     /------------------------------- M ---------------------
-
+            temp2 = 0;
+            mar = sp;
+            rd;
+            temp = mdr;
+            sp = sp + 1;
+            mar = sp;
+            rd;
+            loop: 
+                  0 = mdr; if (z) goto done;
+                  0 = mdr & 1: if (z) goto continue;
+                  temp2 = temp2 + temp;
+                  mdr = right(mdr);
+                  temp = left(temp);
+                  goto loop;
+            continue:
+                  mdr = right(mdr);
+                  temp = left(temp);
+                  goto loop;
+            done:
+                  mar = sp;
+                  mdr = temp2;
+                  wr; goto fetch;
 LF_F_4:     /------------------------------- MULTI --------------------- (✓)
-           
             // INITIAL GETS -------
             temp3 = 1;
             mar = sp;
@@ -344,36 +381,24 @@ LF_F_4:     /------------------------------- MULTI --------------------- (✓)
             rd;
             temp2 = mdr;
             mdr = 0;
-
             //-----------
-
             // CHECKING FOR NEGATIVES ------
-
             0 = temp; if (z) goto zeromultiplier;
             0 = temp2; if (z) goto zeromultiplier;
             0 = temp & mdr; if (s) goto multi;
             0 = temp; if (s) goto tnegfound;
             0 = temp; if (s) goto mnegfound;
-
             //----------------------------------
-
             // the temp3 register is used as a flag to see if there was a  
             // negative found
-
-
-
 // MAIN LOOP --------
-
 multi:
             mdr = mdr + temp2;
             temp = temp - 1;
             0 = temp; if (z) goto pospushfetch;
             goto multi;
-
 // -------------------
-
 // PUSH TO STACK------
-
 pospushfetch:
             0 = temp3; if (z) goto negpushfetch;
             wr; goto fetch;
@@ -381,33 +406,20 @@ negpushfetch:
             mdr = ~mdr
             mdr = mdr + 1;
             wr; goto fetch;
-
 //--------------------------
-
 // NEGATIVE TO POSETIVES----------
-
 mnegfound:
             mdr = ~mdr;
             mdr = mdr + 1;
             temp3 = temp3 - 1; goto multi;
-
-
 tnegfound:
             temp = ~temp;
             temp = temp + 1;
             temp3 = temp3 - 1; goto multi;
-
 //------------------------------
-
-
-
-
-
 zeromultiplier:
             mdr = 0;
             wr; goto fetch;
-
-
 LF_F_5:     /------------------------------- DIV --------------------- (✓)
                   temp3 = 0;
                   mar = sp;
@@ -416,182 +428,247 @@ LF_F_5:     /------------------------------- DIV --------------------- (✓)
                   sp = sp + 1;
                   temp2 = sp;
                   0 = temp; if (z) goto spPush;
-
                   mar = temp2;
                   rd;
-
-
                   0 = temp & mdr; if (s) goto pposout; //if both signs are negative
                   0 = mdr; if (s) goto negout;
                   0 = temp; if (s) goto negout;
                   goto posout;
-
             pposout:
-
                   temp = ~temp;
                   mdr = ~mdr;
                   temp = temp + 1;
                   mdr = mdr + 1;
-
             posout:
-
                   mdr = mdr - temp; if (s) goto posformat;
                   temp3 = temp3 + 1;
                   0 = mdr; if (z) goto posformat;
                   goto posout;
-
-
             negout:
-
                   0 = temp; if (s) goto tflipper;
                   0 = mdr; if (s) goto mflipper;
-
             negfinish:
-
                   mdr = mdr - temp; if (s) goto negformat;
                   temp3 = temp3 + 1;
                   0 = mdr; if (z) goto negformat;
                   goto negfinish;
-
-                  
-
                   tflipper:
                         temp = ~temp;
                         temp = temp + 1; goto negfinish;
                   mflipper:
                         mdr = ~mdr;
                         mdr = mdr + 1; goto negfinish;
-
             spPush:
-
                   sp = sp - 1;
                   mdr = temp2;
                   mar = sp;
                   wr;
                   goto fetch;
-
-
             negformat:
             temp3 = ~temp3;
             temp3 = temp3 + 1;
             mar = sp;
             mdr = temp3;
             wr; goto fetch;
-
             posformat:
             mdr = temp3;
             mar = sp;
             wr; goto fetch;
-
-LF_F_6:     /------------------------------- REM ---------------------
-                
-LF_F_7:     /------------------------------- ADDY ---------------------(?)
+LF_F_6:     /------------------------------- REM --------------------(?)
+            
+            mar = sp; sp = sp + 1;
+            rd;
+            temp = mdr;
+            
+            mar = sp; sp = sp;
+            rd;
+            temp1 = mdr; 
+            
+            0 = temp; if (z) goto denZero;
+            0 = temp; if(s) goto denNeg;
+            0 = temp1; if(s)goto numNeg;
+            goto remloop; 
+            
+            numNeg:
+              0 = temp; if (s) goto bothNeg;
+              temp1 = ~temp1
+              goto remloop;
+            
+            denNeg:
+              0 = temp1; if (s) goto bothNeg;
+              temp = ~temp;
+              goto remloop; 
+              
+            bothNeg:
+              temp = ~temp;
+              temp1 = ~temp;
+              goto remloop; 
+              
+            denZero:
+              ct = 0
+              mar = sp; sp = sp - 1;
+              mdr = ct;
+              wr;
+              goto fetch;
+            
+            remloop:
+              0 = temp1; if (s) goto pushRem;
+              temp1 = temp1 - temp;
+              goto remloop; 
+              
+            pushRem:
+              mar = sp; sp = sp - 1;
+              mdr = temp1;
+              wr;
+              goto fetch;  
+              
+LF_F_7:     /------------------------------- ADDY ---------------------
                 temp = sp;
                 sp = sp + 1;
                 rd;
                 temp = mdr;
-                carry = cy;
-                
+                /carry = cy;
                 mar = sp;
                 rd;
                 mdr = mdr + temp;
-                mdr = mdr + carry; cy = carry; 
+                /mdr = mdr + carry; cy = carry; 
                 goto fetch; 
+LF_F_8:     /------------------------------- OR (correct) --------------------- (Brandon)
                 
-
-LF_F_8:     /------------------------------- OR ---------------------(?)
-                temp = sp; sp = sp + 1;
-                temp2 = sp; sp = sp + 1;
+                mar=sp;                  / ready top number
+                rd;                      / put it in mdr
+                temp = mdr;              / A
+                temp = ~temp;            / !A
                 
-                mar = temp;
+                sp = sp + 1;             / put sp pointing to bottom number
+                mar = sp;                / ready bottom number
+                rd;                      / put it in mdr
+                temp1 = mdr;             / B
+                temp1 = ~temp1;          / !B
+                
+                temp2 = temp & temp1;    / !A & !B
+                temp2 = ~temp2;          / !(!A & !B) == A + B == A OR B 
+                
+                mdr = temp2;             /
+                wr; goto fetch;          / write to sp
+LF_F_9:     /------------------------------- XOR ---------------------(Jabari Dash)
+                / IMPLEMENT DE MORGAN'S LAW
+                
+                mar = sp; sp = sp + 1;
                 rd;
-                temp = mdr;
+                temp = mdr;                     / Get operand B
                 
-                mar = temp2;
+                mar = sp;
                 rd;
-                temp2 = mdr; 
+                temp1 = mdr;                    / Get operand A
                 
-                temp = ~temp;
-                temp2 = ~temp2;
-                
-                temp3 = temp & temp2;
+                temp2 = temp; 
+                temp3 = temp1;
                 temp3 = ~temp3;
+                temp2 = temp2 & temp3;
+                temp2 = ~temp2;
+                mdr = temp2;
+                wr;                             / mem[sp] = ~(A & ~B); Left side of De Morgan's Law
                 
-                mar = sp; sp = sp - 1;
-                mdr = temp3;
-                wr;
-                goto fetch; 
-
-LF_F_9:     /------------------------------- XOR ---------------------(?)
-
-LF_F_A:     /--------------------------------- AND -------------------(?)
+                temp2 = temp;
+                temp3 = temp1;
+                temp2 = ~temp2;
+                temp2 = temp2 & temp3;
+                temp2 = ~temp2;                 / mem[sp] = ~(~A & B); Right sie od De Morgan's Law      
+                
+                mar = sp;
+                rd;
+                temp3 = mdr;
+                temp2 = temp2 & temp3;          / ~(A & ~B) & ~(~A & B); AND Both sides
+                
+                temp2 = ~temp2;
+                mdr = temp2;
+                wr;                             / mem[sp] = ~[~(A & ~B) & ~(~A & B)]; NEGATE the result
+                
+                goto fetch;
+LF_F_A:     /--------------------------------- AND -------------------
                 temp = sp;
                 sp = sp + 1;
                 rd; 
                 temp = mdr;
-                
                 temp2 = sp;
                 rd;
                 temp2 = mdr;
-                
                 temp3 = temp & temp2;
                 mar = sp;
                 mdr = temp3
-                wr; 
-
-
-LF_F_B:     /--------------------------------- FLIP -------------------(?)
+                wr; goto fetch;
+LF_F_B:     /--------------------------------- FLIP -------------------
                 temp = sp;
                 rd;
                 mdr = ~mdr;
                 wr; 
                 goto fetch
-LF_F_C:     /----------------------------------- CALI -----------------(?)
-                temp = sp;
-                rd;
-                mar = sp;
-                mdr = pc;
-                wr;
-                pc = temp; 
-                goto fetch; 
-LF_F_D:     /--------------------------- SECT -------------------------(?)
-                temp = sp;
-                sp = sp + 1;
-                rd; 
-                ct = mdr;
-                goto fetch; 
-LF_F_E:     /---------------------------- ROT ------------------------(?)
-                
-
-LF_F_F_0000:/----------------------------- PSP -----------------------(?)
-                mar = sp; sp = sp - 1;
-                mdr = mar; 
-                wr; goto fetch;
-LF_F_F_0001:/------------------------------ BPBP ----------------------(?)
-                mar = bp;
-                rd;
-                bp = mdr; 
-                goto fetch;
-LF_F_F_2:   /------------------------------- POBP ---------------------(?)
-                mar = sp; sp = sp + 1;
-                rd;
-                bp = mdr; 
-                goto fetch; 
-LF_F_F_3:   /--------------------------------- PBP -------------------(?)
-                mar = sp; sp = sp - 1;
-                mdr = bp;
-                wr;
-                goto fetch
-LF_F_F_4:   /-------------------------------- BCPY --------------------(?)
-                temp1 = sp; sp = sp + 1;
-                temp2 = sp; sp = sp + 1;
-        check:  0 = ct; if (z) goto fetch;
-                temp1 = temp1 + 1;
-                temp2 = temp2 + 1;
-                
-                mar = temp1;
-                rd;
-                mar = temp2;
-                wr;
-                ct = ct - 1;
-                goto check;
+LF_F_C:     /----------------------------------- CALI -----------------
+                /temp = sp;
+                /rd;
+                /mar = sp;
+                /mdr = pc;
+                /wr;
+                /pc = temp; 
+                /goto fetch; 
+LF_F_D:     /--------------------------- SECT -------------------------
+                /temp = sp;
+                /sp = sp + 1;
+                /rd; 
+                /ct = mdr;
+                /goto fetch; 
+LF_F_E:     /---------------------------- ROT ------------------------
+                /mar = sp; sp = sp + 1;
+                /rd;
+                /temp = mdr;
+                /mar = sp; sp = sp + 1;
+                /rd;
+                /temp2 = mdr;
+                /mar = sp; sp = sp + 1;
+                /rd;
+                /temp3 = mdr;
+                /mar = sp; sp = sp - 1;
+                /rd;
+                /mdr = temp;
+                /mar = sp; sp = sp - 1;
+                /rd;
+                /mdr = temp3;
+                /mar = sp; sp = sp - 1;
+                /rd;
+                /mdr = temp2;
+                /mar = sp;
+                /wr; goto fetch;
+LF_F_F_0000:/----------------------------- PSP -----------------------
+                /mar = sp; sp = sp - 1;
+                /rd;
+                /mdr = mar; 
+                /wr; goto fetch;
+LF_F_F_0001:/------------------------------ BPBP ----------------------
+                /mar = bp;
+                /rd;
+                /bp = mdr; 
+                /goto fetch;
+LF_F_F_2:   /------------------------------- POBP ---------------------
+                /mar = sp; sp = sp + 1;
+                /rd;
+                /bp = mdr; 
+                /goto fetch; 
+LF_F_F_3:   /--------------------------------- PBP -------------------
+                /mar = sp; sp = sp - 1;
+                /mdr = bp;
+                /wr;
+                /goto fetch
+LF_F_F_4:   /-------------------------------- BCPY --------------------
+                /        temp1 = sp; sp = sp + 1;
+            /     temp2 = sp; sp = sp + 1;
+            / check:  0 = ct; if (z) goto fetch;
+            /     temp1 = temp1 + 1;
+        /         temp2 = temp2 + 1;
+          /       
+           /      mar = temp1;
+            /     rd;
+            /     mar = temp2;
+            /     wr;
+            /     ct = ct - 1;
+            /     goto check;
