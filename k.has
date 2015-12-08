@@ -611,11 +611,10 @@ LF_F_C:     /----------------------------------- CALI -----------------
                 /wr;
                 /pc = temp; 
                 /goto fetch; 
-LF_F_D:     /--------------------------- SECT -------------------------(Jabari Dash)
+LF_F_D:     /--------------------------- SECT (correct) -------------------------(Jabari Dash)
                 mar = sp; sp = sp + 1;
                 rd;
                 ct = mdr;
-                
                 goto fetch; 
 LF_F_E:     /---------------------------- ROT ------------------------
                 
@@ -645,13 +644,12 @@ LF_F_E:     /---------------------------- ROT ------------------------
                 sp = sp - 1;
                 mar = sp;
                 mdr = temp1;    /write B where A was
-                sp = sp + 1;
-                
+
                 wr; goto fetch;
 
 LF_F_F_0000:/----------------------------- PSP (correct)-----------------------
-                /temp = sp;      /"temp = sp;"
-                /sp = sp - 1;    /decrement sp
+                /temp = sp;              /"temp = sp;"
+                /sp = sp - 1;            /decrement sp
                 /mar = sp; mdr = temp;   /"mem[--sp] = temp;" / memory address = sp; mdr = old sp; ;split this into two lines if it doesn't work
                 /wr; goto fetch;
 LF_F_F_0001:/------------------------------ BPBP (correct) ----------------------
@@ -682,3 +680,9 @@ LF_F_F_4:   /-------------------------------- BCPY (correct) -------------------
           /wr;
           /ct = ct - 1;
           /goto check;
+          
+          
+          
+          
+          
+           
