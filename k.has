@@ -290,7 +290,7 @@ LF_D:       /----------------------------- UCMP -----------------------
               /temp
               goto fetch;
 LF_E:       /------------------------------ REV ----------------------
-              mar = sp; 
+            mar = sp; 
             sp = sp + 1;
             rd;
             temp = mdr;
@@ -374,55 +374,15 @@ LF_F_3:     /------------------------------- M ---------------------
                   mdr = temp2;
                   wr; goto fetch;
 LF_F_4:     /------------------------------- MULTI --------------------- (✓)
-            // INITIAL GETS -------
-            temp3 = 1;
-            mar = sp;
-            rd; 
+            mar = sp; 
+            rd;
             temp = mdr;
             sp = sp + 1;
             mar = sp;
             rd;
-            temp2 = mdr;
-            mdr = 0;
-            //-----------
-            // CHECKING FOR NEGATIVES ------
-            0 = temp; if (z) goto zeromultiplier;
-            0 = temp2; if (z) goto zeromultiplier;
-            0 = temp & mdr; if (s) goto multi;
-            0 = temp; if (s) goto tnegfound;
-            0 = temp; if (s) goto mnegfound;
-            //----------------------------------
-            // the temp3 register is used as a flag to see if there was a  
-            // negative found
-// MAIN LOOP --------
-multi:
-            mdr = mdr + temp2;
-            temp = temp - 1;
-            0 = temp; if (z) goto pospushfetch;
-            goto multi;
-// -------------------
-// PUSH TO STACK------
-pospushfetch:
-            0 = temp3; if (z) goto negpushfetch;
-            wr; goto fetch;
-negpushfetch:
-            mdr = ~mdr
-            mdr = mdr + 1;
-            wr; goto fetch;
-//--------------------------
-// NEGATIVE TO POSETIVES----------
-mnegfound:
-            mdr = ~mdr;
-            mdr = mdr + 1;
-            temp3 = temp3 - 1; goto multi;
-tnegfound:
-            temp = ~temp;
-            temp = temp + 1;
-            temp3 = temp3 - 1; goto multi;
-//------------------------------
-zeromultiplier:
-            mdr = 0;
-            wr; goto fetch;
+            mdr = temp * mdr;
+            mar = sp;
+            wr; goto fetch; 
 LF_F_5:     /------------------------------- DIV --------------------- (✓)
                   temp3 = 0;
                   mar = sp;
@@ -479,47 +439,22 @@ LF_F_5:     /------------------------------- DIV --------------------- (✓)
 LF_F_6:     /------------------------------- REM --------------------(?)
             mar = sp; sp = sp + 1;
             rd;
-            temp = mdr;         
+            temp = mdr; 
             
-            mar = sp;
+            mar = sp; 
             rd;
-            temp1 = mdr;        
+            temp1 = mdr; 
             
-            0 = temp; if (z) goto zero;
-            0 = temp; if (s) goto negDen
+            0 = temp1; if (z) goto zero;
+            0 = temp1; if (s) goto neg; 
             
-            0 = temp1; if (z) goto zero
-            0 = temp1; if (s) goto negNum
-            
-            temp2 = temp1; 
-            
-            negNum:
-              temp1 = ~temp1;
-              goto remloop;
-            
-            negDen:
-              mar = sp; sp = sp - 1;
-              mdr = 0;
-              wr;
-              goto fetch; 
             zero:
-              mar = sp; sp = sp - 1;
-              mdr = ct;
-              wr;
-              goto fetch; 
+                mar = sp;
+                mdr = 0;
+                
+            
+            
               
-            remloop:
-              0 = temp1; if (s) goto pushRem
-              temp1 = temp1 - temp; 
-              goto remloop
-              
-            pushRem:
-              temp = temp * temp1
-              temp = temp1 - temp
-              mar = sp;
-              mdr = temp;
-              wr;
-              goto fetch;   
               
 LF_F_7:     /------------------------------- ADDY ---------------------
                 temp = sp;
@@ -550,7 +485,7 @@ LF_F_8:     /------------------------------- OR (correct) --------------------- 
                 
                 mdr = temp2;             /
                 wr; goto fetch;          / write to sp
-LF_F_9:     /------------------------------- XOR ---------------------(Jabari Dash)
+LF_F_9:     /------------------------------- XOR (correct)---------------------(Jabari Dash)
                 / IMPLEMENT DE MORGAN'S LAW
                 
                 mar = sp; sp = sp + 1;
@@ -585,17 +520,19 @@ LF_F_9:     /------------------------------- XOR ---------------------(Jabari Da
                 wr;                             / mem[sp] = ~[~(A & ~B) & ~(~A & B)]; NEGATE the result
                 
                 goto fetch;
-LF_F_A:     /--------------------------------- AND -------------------
-                temp = sp;
-                sp = sp + 1;
-                rd; 
-                temp = mdr;
-                temp2 = sp;
+LF_F_A:     /--------------------------------- AND (correct)------------------- (Brandon)
+                mar = sp;   /ready 1st number 
                 rd;
-                temp2 = mdr;
-                temp3 = temp & temp2;
+                temp = mdr; /first number
+                sp = sp + 1;
+                
+                mar = sp;   /ready second number
+                rd;
+                temp1 = mdr;/second number
+
+                temp2 = temp & temp1;
                 mar = sp;
-                mdr = temp3
+                mdr = temp2;
                 wr; goto fetch;
 LF_F_B:     /--------------------------------- FLIP -------------------
                 temp = sp;
@@ -603,20 +540,18 @@ LF_F_B:     /--------------------------------- FLIP -------------------
                 mdr = ~mdr;
                 wr; 
                 goto fetch
-LF_F_C:     /----------------------------------- CALI -----------------
-                /temp = sp;
-                /rd;
-                /mar = sp;
-                /mdr = pc;
-                /wr;
-                /pc = temp; 
-                /goto fetch; 
-LF_F_D:     /--------------------------- SECT (correct) -------------------------(Jabari Dash)
-                mar = sp; sp = sp + 1;
-                rd;
-                ct = mdr;
+LF_F_C:     /----------------------------------- CALI -----------------(Jabari Dash)
+                temp = sp;
+                sp = pc;
+                pc = temp & xmask;
+
                 goto fetch; 
-LF_F_E:     /---------------------------- ROT ------------------------
+LF_F_D:     /--------------------------- SECT (correct) -------------------------(Jabari Dash)
+                mar = sp; sp = sp + 1;      / Get sp address
+                rd;                         / Get contents @ that address into mdr
+                ct = mdr;                   / count = mdr
+                goto fetch; 
+LF_F_E:     /---------------------------- ROT (correct) ------------------------ (Brandon)
                 
                 mar = sp;
                 rd;
