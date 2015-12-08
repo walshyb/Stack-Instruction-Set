@@ -436,7 +436,7 @@ LF_F_5:     /------------------------------- DIV --------------------- (✓)
             mdr = temp3;
             mar = sp;
             wr; goto fetch;
-LF_F_6:     /------------------------------- REM --------------------(?)
+LF_F_6:     /------------------------------- REM --------------------
             mar = sp; sp = sp + 1;
             rd;
             temp = mdr; 
@@ -446,11 +446,26 @@ LF_F_6:     /------------------------------- REM --------------------(?)
             temp1 = mdr; 
             
             0 = temp1; if (z) goto zero;
-            0 = temp1; if (s) goto neg; 
-            
+                goto remLoop;
+                
             zero:
                 mar = sp;
                 mdr = 0;
+                wr;
+                goto fetch;
+             
+            remLoop:
+                0 = temp1; if (s) goto remPush
+                temp1 = temp1 - temp;
+                goto remLoop;
+                
+            remPush:
+                temp = temp + temp1
+                mar = sp;
+                mdr = temp;
+                wr;
+                goto fetch; 
+                
                 
             
             
@@ -534,17 +549,18 @@ LF_F_A:     /--------------------------------- AND (correct)------------------- 
                 mar = sp;
                 mdr = temp2;
                 wr; goto fetch;
-LF_F_B:     /--------------------------------- FLIP -------------------
-                temp = sp;
+LF_F_B:     /--------------------------------- FLIP (correct) ------------------- (Brandon Walsh)
+                mar = sp;   /read value at sp
                 rd;
-                mdr = ~mdr;
-                wr; 
-                goto fetch
-LF_F_C:     /----------------------------------- CALI -----------------(Jabari Dash)
-                temp = sp;
-                sp = pc;
+                mdr = ~mdr; /flip value
+                wr; goto fetch  /right it back to sp
+LF_F_C:     /----------------------------------- CALI (correct) -----------------(Jabari Dash & Brandon Walsh)
+                mar = sp;
+                rd;
+                temp = mdr;
+                mdr = pc;
+                wr;
                 pc = temp & xmask;
-
                 goto fetch; 
 LF_F_D:     /--------------------------- SECT (correct) -------------------------(Jabari Dash)
                 mar = sp; sp = sp + 1;      / Get sp address
