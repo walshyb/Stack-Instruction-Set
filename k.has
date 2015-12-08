@@ -290,21 +290,20 @@ LF_D:       /----------------------------- UCMP -----------------------
               /temp
               goto fetch;
 LF_E:       /------------------------------ REV ----------------------
-              temp1 = sp; 
-              sp = sp + 1; 
-              rd;
-              temp2 = sp;
-              sp = sp + 1;
-              rd;
-              mar = sp;
-              mdr = temp1;
-              wr;
-              sp = sp - 1;
-              mar = sp;
-              mdr = temp2;
-              wr;
-              sp = sp - 1;
-              goto fetch; 
+              mar = sp; 
+            sp = sp + 1;
+            rd;
+            temp = mdr;
+            mar = sp;
+            rd
+            temp2 = mdr;
+            mdr = temp;
+            wr;
+            sp = sp - 1;
+            mdr = temp2;
+            mar = sp;
+            wr; 
+            goto fetch; 
 LF_F_0000:  /----------------------------- SHLL -----------------------
             mar = sp;
             rd;
@@ -480,51 +479,45 @@ LF_F_5:     /------------------------------- DIV --------------------- (✓)
 LF_F_6:     /------------------------------- REM --------------------(?)
             mar = sp; sp = sp + 1;
             rd;
-            temp = mdr;
+            temp = mdr;         
             
-            mar = sp; sp = sp + 1; 
+            mar = sp;
             rd;
-            temp1 = mdr; 
-            
-            temp3 = temp1 - temp;
-            0 = temp3; if (z) goto zero;
-            0 = temp3; if (s) goto pushRem;
+            temp1 = mdr;        
             
             0 = temp; if (z) goto zero;
-            0 = temp; if(s) goto denNeg;
-            0 = temp1; if(s)goto numNeg;
-            goto remloop; 
+            0 = temp; if (s) goto negDen
             
-            numNeg:
-              0 = temp; if (s) goto bothNeg;
-              temp1 = ~temp1
+            0 = temp1; if (z) goto zero
+            0 = temp1; if (s) goto negNum
+            
+            temp2 = temp1; 
+            
+            negNum:
+              temp1 = ~temp1;
               goto remloop;
             
-            denNeg:
-              0 = temp1; if (s) goto bothNeg;
-              temp = ~temp;
-              goto remloop; 
-              
-            bothNeg:
-              temp = ~temp;
-              temp1 = ~temp;
-              goto remloop; 
-              
+            negDen:
+              mar = sp; sp = sp - 1;
+              mdr = 0;
+              wr;
+              goto fetch; 
             zero:
-              ct = 0
               mar = sp; sp = sp - 1;
               mdr = ct;
               wr;
-              goto fetch;
+              goto fetch; 
               
             remloop:
-              0 = temp1; if (s) goto pushRem;
-              temp1 = temp1 - temp;
-              goto remloop; 
+              0 = temp1; if (s) goto pushRem
+              temp1 = temp1 - temp; 
+              goto remloop
               
             pushRem:
-              mar = sp; sp = sp - 1;
-              mdr = temp1;
+              temp = temp * temp1
+              temp = temp1 - temp
+              mar = sp;
+              mdr = temp;
               wr;
               goto fetch;   
               
@@ -618,38 +611,49 @@ LF_F_C:     /----------------------------------- CALI -----------------
                 /wr;
                 /pc = temp; 
                 /goto fetch; 
-LF_F_D:     /--------------------------- SECT -------------------------
-                /temp = sp;
-                /sp = sp + 1;
-                /rd; 
-                /ct = mdr;
-                /goto fetch; 
+LF_F_D:     /--------------------------- SECT -------------------------(Jabari Dash)
+                mar = sp; sp = sp + 1;
+                rd;
+                ct = mdr;
+                
+                goto fetch; 
 LF_F_E:     /---------------------------- ROT ------------------------
-                /mar = sp; sp = sp + 1;
-                /rd;
-                /temp = mdr;
-                /mar = sp; sp = sp + 1;
-                /rd;
-                /temp2 = mdr;
-                /mar = sp; sp = sp + 1;
-                /rd;
-                /temp3 = mdr;
-                /mar = sp; sp = sp - 1;
-                /rd;
-                /mdr = temp;
-                /mar = sp; sp = sp - 1;
-                /rd;
-                /mdr = temp3;
-                /mar = sp; sp = sp - 1;
-                /rd;
-                /mdr = temp2;
-                /mar = sp;
-                /wr; goto fetch;
-LF_F_F_0000:/----------------------------- PSP (correct)-----------------------
-                temp = sp;      /"temp = sp;"
-                sp = sp - 1;    /decrement sp
-                mar = sp; mdr = temp;   /"mem[--sp] = temp;" / memory address = sp; mdr = old sp; ;split this into two lines if it doesn't work
+                
+                mar = sp;
+                rd;
+                temp = mdr;     / A
+                sp = sp + 1;
+                
+                mar = sp;
+                rd;
+                temp1 = mdr;    / B
+                sp = sp + 1;
+                
+                mar = sp;
+                rd; 
+                temp2 = mdr;    / C
+
+                mar = sp;
+                mdr = temp;
+                wr;             / write A where C was 
+                
+                sp = sp - 1;
+                mar = sp;
+                mdr = temp2;    / write C where B was
+                wr;
+                
+                sp = sp - 1;
+                mar = sp;
+                mdr = temp1;    /write B where A was
+                sp = sp + 1;
+                
                 wr; goto fetch;
+
+LF_F_F_0000:/----------------------------- PSP (correct)-----------------------
+                /temp = sp;      /"temp = sp;"
+                /sp = sp - 1;    /decrement sp
+                /mar = sp; mdr = temp;   /"mem[--sp] = temp;" / memory address = sp; mdr = old sp; ;split this into two lines if it doesn't work
+                /wr; goto fetch;
 LF_F_F_0001:/------------------------------ BPBP (correct) ----------------------
                 /mar = bp;
                 /rd;
